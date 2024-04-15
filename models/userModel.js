@@ -42,7 +42,10 @@ var userSchema = new mongoose.Schema({
         type: Array,
         default: [],
     },
-    address: [{ type: mongoose.Schema.Types.ObjectId, ref: "Address" }],
+    // address: [{ type: mongoose.Schema.Types.ObjectId, ref: "Address" }], // we are not going to store multiple address here we simply store address here
+    address: {
+        type: String,
+    },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
     refreshToken: {
         type: String,

@@ -1,11 +1,10 @@
 const Blog = require("../models/blogModel");
-const validateMongodbid = require("../utils/validateMongodbid");
+const validateMongodbId = require("../utils/validateMongodbid");
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 
 const cloudinaryUploadImg = require("../utils/cloudinary");
 const fs = require("fs");
-
 
 const createBlog = asyncHandler(async (req,res) => {
     try {
@@ -17,9 +16,10 @@ const createBlog = asyncHandler(async (req,res) => {
     }
 });
 
+
+
 const updateBlog = asyncHandler(async (req,res) => {
     const { id } = req.params;
-    validateMongodbid(id);
     try {
         const updateBlog = await Blog.findByIdAndUpdate(id, req.body, {
             new: true,
@@ -31,14 +31,12 @@ const updateBlog = asyncHandler(async (req,res) => {
     }
 });
 
+
 //fetch a blog
 const getBlog = asyncHandler(async (req,res) => {
     const { id } = req.params;
-    validateMongodbid(id);
     try {
-        const getBlog = await Blog.findById(id)
-        .populate("likes")
-        .populate("dislikes");
+        //const getBlog = await Blog.findById(id);
         const updateViews = await Blog.findByIdAndUpdate(
             id,
             {
@@ -53,6 +51,8 @@ const getBlog = asyncHandler(async (req,res) => {
     }
 });
 
+
+
 const getAllBlogs = asyncHandler(async (req,res) => {
     try {
         const getBlogs = await Blog.find();
@@ -63,10 +63,10 @@ const getAllBlogs = asyncHandler(async (req,res) => {
     }
 });
 
+
 //copy updateBlog
 const deleteBlog = asyncHandler(async (req,res) => {
     const { id } = req.params;
-    validateMongodbid(id);
     try {
         const deletedBlog = await Blog.findByIdAndDelete(id);
         res.json(deletedBlog);
@@ -76,10 +76,11 @@ const deleteBlog = asyncHandler(async (req,res) => {
     }
 });
 
+
 const likeBlog = asyncHandler(async (req,res) => {
     // console.log(req.body);             // router ko createBlog and updateBlog ke bhi upr rkhna h likeBlog router ko
     const { blogId } = req.body;
-    validateMongodbid(blogId);
+    validateMongodbId(blogId);
 
     //find the blog which you want to be liked
     const blog = await Blog.findById(blogId);
@@ -129,11 +130,13 @@ const likeBlog = asyncHandler(async (req,res) => {
     }
 });
 
+
+
 //copy likeBlog code
 const dislikeBlog = asyncHandler(async (req,res) => {
     // console.log(req.body);             // router ko createBlog and updateBlog ke bhi upr rkhna h likeBlog router ko
     const { blogId } = req.body;
-    validateMongodbid(blogId);
+    validateMongodbId(blogId);
 
     //find the blog which you want to be liked
     const blog = await Blog.findById(blogId);
@@ -184,6 +187,7 @@ const dislikeBlog = asyncHandler(async (req,res) => {
 });
 
 
+
 //productCtrl se copy kiya
 const uploadImages = asyncHandler(async (req,res) => {               
     // console.log(req.files);
@@ -200,7 +204,13 @@ const uploadImages = asyncHandler(async (req,res) => {
             const newpath = await uploader(path);
             console.log(newpath);
             urls.push(newpath);
-            fs.unlinkSync(path);
+            fs.unlink(path, (err) => {
+                if (err) {
+                    console.error(`Error deleting file ${path}:`, err);
+                } else {
+                    console.log(`File ${path} deleted successfully`);
+                }
+            });
         }
         const findBlog = await Blog.findByIdAndUpdate(    //1st.change
             id,
@@ -225,11 +235,3 @@ const uploadImages = asyncHandler(async (req,res) => {
 
 module.exports = { createBlog , updateBlog , getBlog , getAllBlogs , deleteBlog , likeBlog , dislikeBlog, uploadImages };
 
-
-
-// validateMongodbid in the 
-
-//     updateBlog
-//     getBlog
-//     deleteBlog
-//     likeBlog ....

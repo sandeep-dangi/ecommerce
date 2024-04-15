@@ -293,42 +293,48 @@ const rating = asyncHandler(async (req,res) => {
 });
 
 
-
 const uploadImages = asyncHandler(async (req,res) => {
-   // console.log(req.files);
-   const { id } = req.params;   // this is for product.....by this we find our product and upload our images
-   validateMongodbId(id);
-   try
-   {
-       const uploader = (path) => cloudinaryUploadImg(path,"images");
-       const urls = [];
-       const files = req.files;
-       for(const file of files)
-       {
-           const { path } = file;
-           const newpath = await uploader(path);
-           console.log(newpath);
-           urls.push(newpath);
-           fs.unlinkSync(path);
-       }
-       const findProduct = await Product.findByIdAndUpdate(
-           id,
+    // console.log(req.files);
+    const { id } = req.params;   // this is for product.....by this we find our product and upload our images
+    validateMongodbId(id);
+    try
+    {
+        const uploader = (path) => cloudinaryUploadImg(path,"images");
+        const urls = [];
+        const files = req.files;
+        for (const file of files) {
+         const { path } = file;
+         const newpath = await uploader(path);
+         console.log(newpath);
+         urls.push(newpath);
+         fs.unlink(path, (err) => {
+             if (err) {
+                 console.error(`Error deleting file ${path}:`, err);
+             } else {
+                 console.log(`File ${path} deleted successfully`);
+             }
+         });
+         
+         }
+     
+        const findProduct = await Product.findByIdAndUpdate(
+            id,
+             {
+             images: urls.map((file) => {
+                return file;
+             }),
+           },
             {
-            images: urls.map((file) => {
-               return file;
-            }),
-          },
-           {
-               new: true,
-           }
-                   //image:  it is in our model
-       );
-       res.json(findProduct);
-   }
-   catch (error) {
-       throw new Error(error);
-   }
-});
+                new: true,
+            }
+                    //image:  it is in our model
+        );
+        res.json(findProduct);
+    }
+    catch (error) {
+        throw new Error(error);
+    }
+ });
 
 module.exports = { createProduct , getaProduct , getAllProduct , updateProduct ,deleteProduct,
      addToWishList , rating, uploadImages, };
